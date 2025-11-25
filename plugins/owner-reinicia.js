@@ -132,9 +132,9 @@ export async function sendReconnectionMessage(conn) {
 > 🎯 *Funciones:* Operativas
 
 > 📊 *Información del sistema:*
-> • Tiempo de reconexión: ${Date.now() - info.timestamp}ms
-> • Estado: ✅ Conectado al servidor
-> • Servicios: 🟢 Todos operativos
+> 🕑 Tiempo de reconexión: ${Date.now() - info.timestamp}ms
+> 🔰 Estado: ✅ Conectado al servidor
+> 💾 Servicios: 🟢 Todos operativos
 
 > 🎅 *¡Itsuki V3 está listo para ayudarte de nuevo!*
 > 🎄 *¡Feliz Navidad!* 🎁`,
