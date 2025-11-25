@@ -21,26 +21,12 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
       if (!data?.play && !data?.music) return conn.reply(m.chat, '🎅 *¡ERROR NAVIDEÑO!*\n\n> ❌ Enlace inválido o sin contenido descargable.\n> 🎄 ¡Itsuki V3 no pudo encontrar el contenido! 🎁', m)
 
       const { title, duration, author, created_at, type, images, music, play } = data
-      
+
       // Si el comando es para audio
       if (command === 'tiktokaudio' || command === 'tta' || command === 'ttaudio') {
         if (!music) {
           return conn.reply(m.chat, `🎅 *¡ERROR NAVIDEÑO!*\n\n> ❌ No se pudo obtener el audio del video.\n> 🎄 ¡Itsuki V3 no encontró audio disponible! 🎁`, m)
         }
-        
-        /*const caption = `🎄 *AUDIO NAVIDEÑO DE TIKTOK* 🎅
-
-> 🏷 *Título:*
-> \`\`\`${title || 'Audio de TikTok'}\`\`\`
-> 👑 *Autor:*
-> \`\`\`${author?.nickname || author?.unique_id || 'Desconocido'}\`\`\`
-> ⏱️ *Duración:*
-> \`\`\`${duration || 'No disponible'} segundos\`\`\`
-
-> 🎶 *Audio original de:* ${author?.nickname || author?.unique_id || 'No disponible'}
-
-> 🎁 *¡Disfruta de tu audio navideño!*
-> 🎅 *Itsuki Nakano V3 te desea felices fiestas* 🎄`*/
 
         await conn.sendMessage(
           m.chat,
@@ -52,8 +38,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
           },
           { quoted: m }
         )
-        
-        await conn.sendMessage(m.chat, { text: caption }, { quoted: m })
+
         await m.react('✅')
         return
       }
