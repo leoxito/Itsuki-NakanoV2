@@ -3,81 +3,82 @@ import fetch from 'node-fetch'
 import Jimp from 'jimp'
 
 let handler = async (m, { conn, text, usedPrefix, command }) => {
-  const ctxErr = global.rcanalx || { contextInfo: { externalAdReply: { title: '❌ Error', body: 'Itsuki Nakano IA', thumbnailUrl: 'https://files.catbox.moe/zh5z6m.jpg', sourceUrl: global.canalOficial || '' }}}
-  const ctxWarn = global.rcanalw || { contextInfo: { externalAdReply: { title: '⚠️ Advertencia', body: 'Itsuki Nakano IA', thumbnailUrl: 'https://files.catbox.moe/zh5z6m.jpg', sourceUrl: global.canalOficial || '' }}}
-  const ctxOk = global.rcanalr || { contextInfo: { externalAdReply: { title: '✅ Acción', body: 'Itsuki Nakano IA', thumbnailUrl: 'https://qu.ax/QGAVS.jpg', sourceUrl: global.canalOficial || '' }}}
-
   if (!text) {
-    return conn.reply(m.chat, `> ꒰⌢ ʚ˚₊‧ 🕸️ ꒱꒱ :: *DESCARGA APK* ıllı
+    return conn.reply(m.chat, `> 🎄 *¡NAVIDAD EN APK!* 🎅
 
-> ੭੭ ﹙ ❌ ﹚:: *Nombre requerido*
+> 🎁 *DESCARGADOR APK NAVIDEÑO*
+
+> ❌ *Uso incorrecto*
 
 \`\`\`Debes ingresar el nombre de la aplicación\`\`\`
 
-*Ejemplo:*
-> ${usedPrefix + command} WhatsApp
-> ${usedPrefix + command} TikTok
+> *Ejemplos navideños:*
+> • ${usedPrefix + command} WhatsApp
+> • ${usedPrefix + command} TikTok
 
-*Nota:* Busca y descarga APKs desde Aptoide`, m, ctxWarn)
+> 🎅 *Nota:* Busca y descarga APKs desde Aptoide`, m)
   }
 
   try {
-    await m.react('🕒')
+    await m.react('🎁')
 
     let searchA = await search(text)
     if (!searchA.length) {
       await m.react('❌')
-      return conn.reply(m.chat, `> ꒰⌢ ʚ˚₊‧ ⚠️ ꒱꒱ :: *SIN RESULTADOS* ıllı
+      return conn.reply(m.chat, `> 🎄 *¡BÚSQUEDA SIN RESULTADOS!* 🎅
 
-> ੭੭ ﹙ 🔍 ﹚:: *Búsqueda sin resultados*
+> 🔍 *Búsqueda sin resultados*
 
 \`\`\`No se encontraron aplicaciones para: ${text}\`\`\`
 
-*Sugerencias:*
-• Verifica la ortografía
-• Intenta con el nombre exacto
-• Usa términos en inglés`, m, ctxErr)
+> *Sugerencias:*
+> • Verifica la ortografía
+> • Intenta con el nombre exacto
+> • Usa términos en inglés
+
+> 🎅 *¡Itsuki V3 te ayuda a buscar mejor!* 🎄`, m)
     }
 
     let data5 = await download(searchA[0].id)
 
-    let txt = `> ꒰⌢ ʚ˚₊‧ 📱 ꒱꒱ :: *INFORMACIÓN DE LA APK* ıllı
+    let txt = `> 🎄 *¡INFORMACIÓN DE LA APK!* 🎅
 
-> ੭੭ ﹙ 🏷️ ﹚:: *Nombre*
+> 📱 *Nombre:*
 \`\`\`${data5.name}\`\`\`
 
-> ੭੭ ﹙ 📦 ﹚:: *Package*
+> 📦 *Package:*
 \`\`\`${data5.package}\`\`\`
 
-> ੭੭ ﹙ 📅 ﹚:: *Última actualización*
+> 📅 *Última actualización:*
 \`\`\`${data5.lastup}\`\`\`
 
-> ੭੭ ﹙ 💾 ﹚:: *Tamaño*
+> 💾 *Tamaño:*
 \`\`\`${data5.size}\`\`\`
 
-> ੭੭ ﹙ 📥 ﹚:: *Estado*
-\`\`\`Preparando descarga...\`\`\`
+> 📥 *Estado:*
+\`\`\`Preparando descarga navideña...\`\`\`
 
-‐ ダ *𝙄𝙩𝙨𝙪𝙠𝙞-𝙉𝙖𝙠𝙖𝙣𝙤 𝙋𝙧𝙚𝙢𝘽𝙤𝙩* ギ
-‐ ダ *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ʟᴇᴏ* ギ`
+> 🎅 *¡Itsuki Nakano V3 - Tu asistente navideño!* 🎄`
 
-    await conn.sendFile(m.chat, data5.icon, 'thumbnail.jpg', txt, m, null, ctxOk)
+    await conn.sendFile(m.chat, data5.icon, 'thumbnail.jpg', txt, m)
 
     if (data5.size.includes('GB') || parseFloat(data5.size.replace(' MB', '')) > 999) {
       await m.react('❌')
-      return conn.reply(m.chat, `> ꒰⌢ ʚ˚₊‧ ꕥ ꒱꒱ :: *ARCHIVO DEMASIADO GRANDE* ıllı
+      return conn.reply(m.chat, `> 🎄 *¡ARCHIVO DEMASIADO GRANDE!* 🎅
 
-> ੭੭ ﹙ ⚠️ ﹚:: *Límite de tamaño excedido*
+> ⚠️ *Límite de tamaño excedido*
 
 \`\`\`El archivo pesa: ${data5.size}\`\`\`
 
-> ੭੭ ﹙ 📏 ﹚:: *Límite máximo permitido*
+> 📏 *Límite máximo permitido:*
 \`\`\`999 MB\`\`\`
 
-*Solución:*
-• Busca una versión más ligera
-• Descarga desde otro sitio
-• Verifica el tamaño antes de descargar`, m, ctxErr)
+> *Solución:*
+> • Busca una versión más ligera
+> • Descarga desde otro sitio
+> • Verifica el tamaño antes de descargar
+
+> 🎅 *¡Itsuki V3 recomienda buscar alternativas!* 🎄`, m)
     }
 
     let thumbnail = null
@@ -86,7 +87,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
       img.resize(300, Jimp.AUTO)
       thumbnail = await img.getBufferAsync(Jimp.MIME_JPEG)
     } catch (err) {
-      console.log('⚠️ Error al crear miniatura:', err)
+      console.log('🎄 Error al crear miniatura:', err)
     }
 
     await conn.sendMessage(
@@ -94,29 +95,21 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
       {
         document: { url: data5.dllink },
         mimetype: 'application/vnd.android.package-archive',
-        fileName: `${data5.name}.apk`,
-        caption: `> ꒰⌢ ʚ˚₊‧ ✅ ꒱꒱ :: *APK DESCARGADA* ıllı
+        fileName: `${data5.name}_navidad.apk`,
+        caption: `> 🎄 *¡APK DESCARGADA!* 🎅
 
-> ੭੭ ﹙ 📱 ﹚:: *Aplicación*
+> 📱 *Aplicación:*
 \`\`\`${data5.name}\`\`\`
 
-> ੭੭ ﹙ 📦 ﹚:: *Package*
+> 📦 *Package:*
 \`\`\`${data5.package}\`\`\`
 
-> ੭੭ ﹙ 💾 ﹚:: *Tamaño*
+> 💾 *Tamaño:*
 \`\`\`${data5.size}\`\`\`
 
-‐ ダ *𝘐𝘵𝘴𝘶𝘬𝘪-𝘗𝘳𝘦𝘮𝘉𝘰𝘵* ギ
-‐ ダ *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ʟᴇᴏ* ギ`,
-        ...(thumbnail ? { jpegThumbnail: thumbnail } : {}),
-        contextInfo: {
-          externalAdReply: {
-            title: `${data5.name}`,
-            body: `📱 ${data5.size} • Aptoide Download`,
-            mediaType: 1,
-            sourceUrl: data5.dllink
-          }
-        }
+> 🎅 *¡Disfruta tu aplicación navideña!*
+> 🎄 *¡Feliz Navidad con Itsuki Nakano V3!* 🎁`,
+        ...(thumbnail ? { jpegThumbnail: thumbnail } : {})
       },
       { quoted: m }
     )
@@ -126,28 +119,30 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
   } catch (error) {
     console.error(error)
     await m.react('❌')
-    return conn.reply(m.chat, `> ꒰⌢ ʚ˚₊‧ ✖️ ꒱꒱ :: *ERROR EN DESCARGA* ıllı
+    return conn.reply(m.chat, `> 🎄 *¡ERROR EN DESCARGA!* 🎅
 
-> ੭੭ ﹙ ⚠️ ﹚:: *Error detectado*
+> ❌ *Error detectado*
 
 \`\`\`${error.message || 'Error al procesar la descarga'}\`\`\`
 
-*Posibles causas:*
-• Aplicación no disponible
-• Problemas con Aptoide
-• Error en la conexión
+> *Posibles causas:*
+> • Aplicación no disponible
+> • Problemas con Aptoide
+> • Error en la conexión
 
-*Solución:*
-• Verifica el nombre de la aplicación
-• Intenta con otro término de búsqueda
-• Usa *${usedPrefix}report* para informar el problema`, m, ctxErr)
+> *Solución:*
+> • Verifica el nombre de la aplicación
+> • Intenta con otro término de búsqueda
+> • Prueba más tarde
+
+> 🎅 *¡Itsuki V3 lo intentará de nuevo!* 🎄`, m)
   }
 }
 
-handler.tags = ['premium']
+handler.tags = ['downloader']
 handler.help = ['modoapk']
 handler.command = ['modapk', 'apk2']
 handler.group = true
-handler.premium = true
+// handler.premium = false
 
 export default handler
