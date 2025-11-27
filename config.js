@@ -11,7 +11,7 @@ import { dirname } from 'path'
 global.__dirname = (url) => dirname(fileURLToPath(url));
 
 // Configuraciones principales
-global.roowner = ['573187418668']
+global.roowner = ['51906278352']
 global.owner = [
    ['595972314588', '۪〬.࠭⤿ 👑 ⋅ 𝘿𝙖𝙫𝙞𝙙   𝙭𝙯𝙨𝙮', true],
    ['573187418668', '𝙇𝙚𝙤   𝙭𝙯𝙨𝙮  🦇🩸', true],
