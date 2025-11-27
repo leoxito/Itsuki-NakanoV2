@@ -124,7 +124,7 @@ const { say } = cfonts
 const botDisplayName = (config && (config.botName || config.name || global.namebot)) || 'Bot'
 console.log(chalk.magentaBright(`\n💫 Iniciando ${botDisplayName}...`))
 say('Itsuki-Nakano', { font: 'simple', align: 'left', gradient: ['green','white'] })
-say('By Leo xzzsy👑⚡️', { font: 'console', align: 'center', colors: ['cyan','magenta','yellow'] })
+say('By Deyner MD👑⚡️', { font: 'console', align: 'center', colors: ['cyan','magenta','yellow'] })
 try { protoType() } catch {}
 try { serialize() } catch {}
 const packageJsonPath = path.join(__dirname, 'package.json')
