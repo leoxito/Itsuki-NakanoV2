@@ -18,17 +18,16 @@ let handler = async (m, { conn, usedPrefix: _p }) => {
     let neww = performance.now()
     let speed = (neww - old).toFixed(4)
 
-    let menuText = `> ﹒⌗﹒👋🏻 .ৎ˚₊‧  Hola, @${m.sender.split('@')[0]} Pasa Feliz Navidad ❄️.
+    let menuText = `> 👋🏻 .ৎ˚₊‧  Hola, @${m.sender.split('@')[0]} Pasa Feliz Navidad ❄️.
 
-> 𐚁 ֹ ִ \`I N F O - B O T\` ! ୧ ֹ    
-
-> 🤖 \`bot :\` soy Itsuki NakanoV3
-> 📡 \`Ping :\` ${speed} ms
-> ⏱️ \`Uptime :\` [ ${await getUptime()} ]
-> 💾 \`RAM :\` ${(process.memoryUsage().rss / 1024 / 1024).toFixed(2)} MB
-> 📚 \`Plugins :\` ${help.length}
-> 👑 \`Owner :\` @leoDev
-> 🌐 \`Mode :\` ${global.opts['self'] ? 'Private' : 'Public'}
+>  ֹ ִ \`I N F O - B O T\` ! ୧ ֹ    
+> ❐ \`bot :\` *soy ItsukiV3*
+> ❐ \`Ping :\` *${speed} ms*
+> ❐ \`Uptime :\` [ *${await getUptime()}* ]
+> ❐ \`RAM :\` *${(process.memoryUsage().rss / 1024 / 1024).toFixed(2)}* MB
+> ❐ \`Plugins :\` *${help.length}*
+> ❐ \`Owner :\` *@leoDev*
+> ❐ \`Mode :\` *${global.opts['self'] ? 'Private' : 'Public'}*
 
 `
 
@@ -51,10 +50,10 @@ let handler = async (m, { conn, usedPrefix: _p }) => {
       let comandos = help.filter(menu => menu.tags.some(tag => catTags.includes(tag)))
 
       if (comandos.length) {
-        menuText += `꒰⌢ ʚ˚₊‧ ✎ ꒱ ❐ ${catName} ❐\n`
+        menuText += `꒰⌢ ʚ˚₊‧ ✐ ꒱ ☃️ ${catName} ☃️\n`
         let uniqueCommands = [...new Set(comandos.flatMap(menu => menu.help))]
         for (let cmd of uniqueCommands) {
-          menuText += `> ੭੭ ﹙ᰔᩚ﹚ ❏ \`\`\`${_p}${cmd}\`\`\`\n`
+          menuText += `> ੭੭ ﹙✰﹚ ❄︎ \`\`\`${_p}${cmd}\`\`\`\n`
         }
         menuText += `> .・。.・゜✭・.・✫・゜・。.\n\n`
       }
