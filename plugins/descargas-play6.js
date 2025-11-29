@@ -7,7 +7,7 @@ const APPLE_MAX_RESULTS = 10
 
 async function makeFkontak() {
   try {
-    const res = await fetch('https://i.postimg.cc/x8dk1hcW/1000_F_575425197_quJgpNKnFYHI8IVt8HyGTGbJ8ljOwvpH-(1).png')
+    const res = await fetch('https://i.postimg.cc/x8dk1hcW/1000-F-575425197-qu-Jgp-NKn-FYHI8IVt8Hy-GTGb-J8lj-Owvp-H-(1).png')
     const thumb2 = Buffer.from(await res.arrayBuffer())
     return {
       key: { participants: '0@s.whatsapp.net', remoteJid: 'status@broadcast', fromMe: false, id: 'Halo' },
@@ -64,7 +64,6 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
           const sectionTitle = `Resultado ${i + 1} — ${track.title}`
           const desc = `Artistas: ${track.artist} | Duración: ${track.duration} | Popularidad: ${track.popularity} | Fecha: ${track.publish}`
           if (track.url) {
-            // SOLO ESTA LÍNEA CAMBIADA - Vinculado al comando song
             songSections.push({
               title: sectionTitle,
               rows: [
@@ -127,7 +126,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
     if (firstYoutube) {
       quickButtons = [
         { name: 'quick_reply', buttonParamsJson: JSON.stringify({ display_text: '🎧  ꛁ𐑼 ʏᴏᴛᴜʙᴇ ᴘʟᴀʏ-ᴀᴜᴅɪᴏ', id: `${usedPrefix}ytmp3 ${firstYoutube.url}` }) },
-        { name: 'quick_reply', buttonParamsJson: JSON.stringify({ display_text: '🎬  ꛁ𐑼 ʏᴏᴛᴜʙᴇ ᴘʟᴀʏ-ᴠɪᴅᴇᴏ', id: `${usedPrefix}ytmp4 ${firstYoutube.url}` }) },
+        { name: 'quick_reply', buttonParamsJson: JSON.stringify({ display_text: '🎬  ꛁ𐑼 ʏᴏᴜᴛᴜʙᴇ ᴘʟᴀʏ-ᴠɪᴅᴇᴏ', id: `${usedPrefix}ytmp4 ${firstYoutube.url}` }) },
       ]
     }
 
