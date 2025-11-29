@@ -46,7 +46,7 @@ const handler = async (m, { conn, text, participants, isAdmin, isBotAdmin }) => 
     // Verificar si ya no es admin
     if (userInGroup.admin !== 'admin') return
 
-    await m.react('⏳')
+    await m.react('🕑')
 
     try {
       // Quitar admin
