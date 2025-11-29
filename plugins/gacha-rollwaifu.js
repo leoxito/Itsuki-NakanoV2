@@ -10,7 +10,7 @@ async function loadCharacters() {
         const data = await fs.readFile(charactersFilePath, 'utf-8')
         return JSON.parse(data)
     } catch (error) {
-        throw new Error('🧧 No se pudo cargar el archivo characters.json.')
+        throw new Error('> ⓘ \`No se pudo cargar el archivo characters.json\`')
     }
 }
 
@@ -27,29 +27,14 @@ let handler = async (m, { conn }) => {
     const userId = m.sender
     const now = Date.now()
 
-    // Reaccionar al mensaje del usuario inmediatamente
-    await conn.sendMessage(m.chat, {
-        react: {
-            text: '⏳',
-            key: m.key
-        }
-    })
+    await m.react('⏳')
 
-    // Tiempo reducido de 15 minutos a 3 minutos
     if (cooldowns[userId] && now < cooldowns[userId]) {
         const remainingTime = Math.ceil((cooldowns[userId] - now) / 1000)
         const minutes = Math.floor(remainingTime / 60)
         const seconds = remainingTime % 60
-        await conn.reply(m.chat, 
-            `╭━━━〔 🎀 𝐂𝐎𝐎𝐋𝐃𝐎𝐖𝐍 🎀 〕━━━⬣\n│ ⏰ *Tiempo de espera:*\n│ ${minutes} minutos y ${seconds} segundos\n╰━━━━━━━━━━━━━━━━━━━━━━⬣\n\n🌸 *Itsuki te pide paciencia...* (´･ω･\`)`, 
-        m)
-
-        await conn.sendMessage(m.chat, {
-            react: {
-                text: '❎',
-                key: m.key
-            }
-        })
+        await conn.reply(m.chat, `> ⓘ \`Debes esperar:\` *${minutes} minutos y ${seconds} segundos*`, m)
+        await m.react('❌')
         return
     }
 
@@ -60,62 +45,34 @@ let handler = async (m, { conn }) => {
         const randomCharacter = characters[Math.floor(Math.random() * characters.length)]
         const randomImage = randomCharacter.img[Math.floor(Math.random() * randomCharacter.img.length)]
 
-        // Verificar si el personaje ya está reclamado
         const userHarem = harem.find(entry => entry.characterId === randomCharacter.id)
         const statusMessage = userHarem 
-            ? '🔴 Ya este personaje ha sido reclamado' 
-            : '🟢 Disponible para reclamar'
+            ? '🔴 Ya reclamado' 
+            : '🟢 Disponible'
 
-        const message = 
-`╭━━━〔 🌸 𝐏𝐄𝐑𝐒𝐎𝐍𝐀𝐉𝐄 𝐀𝐋𝐄𝐀𝐓𝐎𝐑𝐈𝐎 🌸 〕━━━⬣
-│ 🎴 Nombre ➪ *${randomCharacter.name}*
-│ ⚧️ Género ➪ *${randomCharacter.gender}*
-│ 💎 Valor ➪ *${randomCharacter.value}*
-│ 🎯 Estado ➪ ${statusMessage}
-│ 📚 Fuente ➪ *${randomCharacter.source}*
-│ 🪪 ID: *${randomCharacter.id}*
-╰━━━━━━━━━━━━━━━━━━━━━━⬣
-
-${!userHarem ? `🍜 *¡Personaje disponible!*\n📖 *Responde con .c para reclamarlo* 🎀` : `📚 *Este personaje ya tiene dueño*\n🌸 *Sigue intentando para encontrar uno disponible*`}`
+        const message = `> ⓘ \`Nombre:\` *${randomCharacter.name}*\n> ⓘ \`Género:\` *${randomCharacter.gender}*\n> ⓘ \`Valor:\` *${randomCharacter.value}*\n> ⓘ \`Estado:\` *${statusMessage}*\n> ⓘ \`Fuente:\` *${randomCharacter.source}*\n> ⓘ \`ID:\` *${randomCharacter.id}*`
 
         const mentions = userHarem ? [userHarem.userId] : []
 
-        // Enviar el mensaje con el personaje
-        await conn.sendFile(m.chat, randomImage, `${randomCharacter.name}.jpg`, message, m, { 
-            mentions,
-            contextInfo: {
-                mentionedJid: mentions
-            }
-        })
-
-        // Reacción de éxito
         await conn.sendMessage(m.chat, {
-            react: {
-                text: '✅',
-                key: m.key
-            }
-        })
+            image: { url: randomImage },
+            caption: message,
+            mentions
+        }, { quoted: m })
 
-        // Cooldown reducido de 15 minutos a 3 minutos (180 segundos)
+        await m.react('✅')
+
         cooldowns[userId] = now + 3 * 60 * 1000
 
     } catch (error) {
-        await conn.reply(m.chat, 
-            `╭━━━〔 🎀 𝐄𝐑𝐑𝐎𝐑 🎀 〕━━━⬣\n│ ❌ *Error:* ${error.message}\n╰━━━━━━━━━━━━━━━━━━━━━━⬣\n\n🌸 *Itsuki lo intentará de nuevo...* (´；ω；\`)`, 
-        m)
-
-        await conn.sendMessage(m.chat, {
-            react: {
-                text: '❎',
-                key: m.key
-            }
-        })
+        await conn.reply(m.chat, `> ⓘ \`Error:\` *${error.message}*`, m)
+        await m.react('❌')
     }
 }
 
-handler.help = ['ver', 'rw', 'rollwaifu']
+handler.help = ['rw']
 handler.tags = ['gacha']
-handler.command = ['ver', 'rw', 'rollwaifu']
+handler.command = ['rw', 'rollwaifu']
 handler.group = true
 
 export default handler
