@@ -40,7 +40,7 @@ let handler = async (m, { conn, text, usedPrefix }) => {
   }    
 
   try {    
-    await conn.sendMessage(m.chat, { react: { text: '🔍', key: m.key } })
+    await conn.sendMessage(m.chat, { react: { text: '🕑', key: m.key } })
 
     const searchResults = await yts(text)    
     if (!searchResults.videos.length) throw new Error('No se encontraron resultados')    
