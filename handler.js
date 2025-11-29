@@ -30,6 +30,62 @@ clearTimeout(this)
 resolve()
 }, ms))
 
+// =============================================
+// SISTEMA MULTI-PREFIJO SIMPLIFICADO
+// =============================================
+
+// LISTA DE PREFIJOS (SOLO LOS QUE SOLICITASTE)
+const globalPrefixes = [
+  '.', ',', '!', '#', '$', '%', '&', '*',
+  '-', '_', '+', '=', '|', '\\', '/', '~',
+  '>', '<', '^', '?', ':', ';'
+];
+
+// PREFIJO POR DEFECTO (REGEX MEJORADO)
+const defaultPrefixRegex = /^[.,!#$%&*+\-\-_=<>?/:;~\\|^]/;
+
+// FUNCIÓN MEJORADA PARA DETECTAR PREFIJOS
+const detectPrefix = (text, customPrefix = null) => {
+  if (!text || typeof text !== 'string') return null;
+  
+  const str2Regex = str => str.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&');
+  
+  // Si el plugin tiene prefijo personalizado
+  if (customPrefix) {
+    // RegExp personalizado
+    if (customPrefix instanceof RegExp) {
+      const match = customPrefix.exec(text);
+      return match ? { match, prefix: match[0], regex: customPrefix } : null;
+    }
+    
+    // Array de prefijos personalizados
+    if (Array.isArray(customPrefix)) {
+      for (const prefix of customPrefix) {
+        if (prefix instanceof RegExp) {
+          const match = prefix.exec(text);
+          if (match) return { match, prefix: match[0], regex: prefix };
+        } else if (typeof prefix === 'string') {
+          const regex = new RegExp('^' + str2Regex(prefix));
+          const match = regex.exec(text);
+          if (match) return { match, prefix: match[0], regex };
+        }
+      }
+      return null;
+    }
+    
+    // String personalizado
+    if (typeof customPrefix === 'string') {
+      const regex = new RegExp('^' + str2Regex(customPrefix));
+      const match = regex.exec(text);
+      return match ? { match, prefix: match[0], regex } : null;
+    }
+  }
+  
+  // Usar prefijos globales por defecto
+  const match = defaultPrefixRegex.exec(text);
+  return match ? { match, prefix: match[0], regex: defaultPrefixRegex } : null;
+};
+
 // FUNCIÓN SAFE REPLACE PARA EVITAR ERRORES
 const safeReplace = (str, pattern, replacement) => {
   if (typeof str !== 'string') return ''
@@ -239,21 +295,16 @@ if (!opts["restrict"])
 if (plugin.tags && plugin.tags.includes("admin")) {
 continue
 }
-const strRegex = (str) => str.replace(/[|\\{}()[\]^$+*?.]/g, "\\$&")
-const pluginPrefix = plugin.customPrefix || conn.prefix || global.prefix
-const match = (pluginPrefix instanceof RegExp ?
-[[pluginPrefix.exec(m.text), pluginPrefix]] :
-Array.isArray(pluginPrefix) ?
-pluginPrefix.map(prefix => {
-const regex = prefix instanceof RegExp ?
-prefix : new RegExp(strRegex(prefix))
-return [regex.exec(m.text), regex]
-}) : typeof pluginPrefix === "string" ?
-[[new RegExp(strRegex(pluginPrefix)).exec(m.text), new RegExp(strRegex(pluginPrefix))]] :
-[[[], new RegExp]]).find(prefix => prefix[1])
+
+// =============================================
+// SISTEMA MULTI-PREFIJO IMPLEMENTADO
+// =============================================
+const pluginPrefix = plugin.customPrefix || globalPrefixes
+const prefixMatch = detectPrefix(m.text, pluginPrefix)
+
 if (typeof plugin.before === "function") {
 if (await plugin.before.call(this, m, {
-match,
+match: prefixMatch ? [prefixMatch.match, prefixMatch.regex] : [],
 conn: this,
 participants,
 groupMetadata,
@@ -277,7 +328,7 @@ continue
 if (typeof plugin !== "function") {
 continue
 }
-if ((usedPrefix = (match[0] || "")[0])) {
+if (prefixMatch && (usedPrefix = prefixMatch.prefix)) {
 const noPrefix = m.text.replace(usedPrefix, "")
 let [command, ...args] = noPrefix.trim().split(" ").filter(v => v)
 args = args || []
@@ -368,7 +419,7 @@ continue
 m.isCommand = true
 m.exp += plugin.exp ? parseInt(plugin.exp) : 10
 let extra = {
-match,
+match: prefixMatch ? [prefixMatch.match, prefixMatch.regex] : [],
 usedPrefix,
 noPrefix,
 _args,
