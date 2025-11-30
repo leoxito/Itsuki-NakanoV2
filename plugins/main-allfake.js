@@ -6,7 +6,8 @@ import moment from 'moment-timezone'
 var handler = m => m
 handler.all = async function (m) { 
 // Variables de canales
-global.canalIdM = ["120363404434164076@newsletter", "120363404434164076@newsletter"]
+global.canalIdM = ["120363404434164076@newsletter",
+"120363403726798403@newsletter"]
 global.canalNombreM = ["꒰ ❄️ ITՏᑌKI ᑎᗩKᗩᑎO-ᐯ3 ᑌᑭᗪᗰTᗴ ☃️ ꒱", "𝆺𝅥 𝆭 ִ ֗ ❄ 𝐋𝐚𝐬 𝐐𝐮𝐢𝐧𝐭𝐢𝐥𝐥𝐢𝐬𝐚𝐬-𝐍𝐨𝐯𝐞𝐝𝐚𝐝 📢 ┆ 𝐂𝐡𝐚𝐧𝐧𝐞𝐥-𝐈𝐧𝐟𝐨 ☃️ ˚₊‧"]
 global.channelRD = await getRandomChannel()
 
