@@ -220,7 +220,7 @@ let handler = async (m, { conn }) => {
       text: messageText,
       footer: 'By Ado & Maycol',
       buttons: [
-        { buttonId: '.numvirtual cambiar', buttonText: { displayText: '𝗖𝗮𝗺𝗯𝗶𝗮𝗿 𝗡𝘂́𝗺𝗲𝗿𝗼' }, type: 1 }
+        { buttonId: '.getnum cambiar', buttonText: { displayText: '𝗖𝗮𝗺𝗯𝗶𝗮𝗿 𝗡𝘂́𝗺𝗲𝗿𝗼' }, type: 1 }
       ]
     }, { quoted: m })
 
@@ -239,7 +239,7 @@ let handler = async (m, { conn }) => {
     text: messageText,
     footer: '❄️ Tu número sigue activo..',
     buttons: [
-      { buttonId: '.numvirtual cambiar', buttonText: { displayText: '🎄 𝗖𝗮𝗺𝗯𝗶𝗮𝗿 𝗡𝘂́𝗺𝗲𝗿𝗼' }, type: 1 }
+      { buttonId: '.getnum cambiar', buttonText: { displayText: '🎄 𝗖𝗮𝗺𝗯𝗶𝗮𝗿 𝗡𝘂́𝗺𝗲𝗿𝗼' }, type: 1 }
     ]
   }, { quoted: m })
 
