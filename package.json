@@ -57,7 +57,7 @@
     "uuid": "^10.0.0",
     "yargs": "^17.3.1",
     "dotenv": "^16.0.3",
-    "cheerio": "^1.0.0-rc.12"
+    "cheerio": "npm:cheerio@1.0.0-rc.12",
   },
   "optionalDependencies": {
     "wa-sticker-formatter": "^4.3.2",
