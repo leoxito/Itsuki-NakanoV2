@@ -12,7 +12,7 @@ import { useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion, Bro
 import { makeWASocket, protoType, serialize } from './lib/simple.js'
 import config from './config.js'
 // IMPORTACIÓN CORREGIDA - Ahora importamos del handler.js
-import handlerModule from './handler.js'
+// import handlerModule from './handler.js'
 import { loadDatabase, saveDatabase, DB_PATH } from './lib/db.js'
 import { watchFile } from 'fs'
 
@@ -123,22 +123,14 @@ await loadPlugins()
 
 // IMPORTAR HANDLER CORRECTAMENTE
 let handler
-let sendWelcomeOrBye
-let isWelcomeEnabled
-let setWelcomeState
 
 try { 
   // Importar el módulo handler completo
   const handlerImport = await import('./handler.js')
-  
+
   // Extraer funciones del handler
   handler = handlerImport.handler || handlerImport.default?.handler
-  
-  // Obtener funciones de bienvenida del módulo handler
-  sendWelcomeOrBye = handlerImport.sendWelcomeOrBye || handlerImport.default?.sendWelcomeOrBye
-  isWelcomeEnabled = handlerImport.isWelcomeEnabled || handlerImport.default?.isWelcomeEnabled
-  setWelcomeState = handlerImport.setWelcomeState || handlerImport.default?.setWelcomeState
-  
+
   if (!handler) {
     throw new Error('No se encontró la función handler en handler.js')
   }
@@ -391,9 +383,6 @@ sock.ev.on('connection.update', async (update) => {
 const { connection, lastDisconnect, qr } = update
 if (connection === 'open') {
 console.log('✅ Bot conectado exitosamente')
-if (typeof sendReconnectionMessage === 'function') {
-await sendReconnectionMessage(conn)
-}
 }
 if (connection === 'close') {
 console.log('❌ Conexión cerrada:', lastDisconnect?.error)
@@ -452,101 +441,10 @@ console.log(chalk.red('[Open] Error en post-conexión:', e.message))
 })
 
 // =============================================
-// EVENTO DE BIENVENIDA/DESPEDIDA CORREGIDO
+// EVENTO DE BIENVENIDA/DESPEDIDA ELIMINADO
 // =============================================
-sock.ev.on('group-participants.update', async (ev) => {
-try {
-const { id, participants, action } = ev || {}
-if (!id || !participants || !participants.length) return
-const db = global.db?.data
-const chatCfg = db?.chats?.[id] || { welcome: true }
-
-// VERIFICAR SI EL WELCOME ESTÁ ACTIVADO
-if (isWelcomeEnabled) {
-  const welcomeEnabled = await Promise.resolve(isWelcomeEnabled(id))
-  if (!welcomeEnabled) {
-    console.log(`🎀 Welcome/Bye desactivado para el grupo: ${id}`)
-    return
-  }
-}
-
-const type = action === 'add' ? 'welcome' : (action === 'remove' ? 'bye' : null)
-if (!type) return
-
-const botIdRaw = sock?.user?.id || ''
-const botId = botIdRaw ? jidNormalizedUser(botIdRaw) : ''
-const normalizedParts = participants.map(p => {
-try { return jidNormalizedUser(p) } catch { return p }
-})
-
-// Evitar despedida cuando el bot es expulsado
-if (type === 'bye' && botId && normalizedParts.includes(botId)) {
-return 
-}
-
-let meta = null
-if (typeof sock.groupMetadata === 'function') {
-try { meta = await sock.groupMetadata(id) } catch { meta = null }
-}
-const groupName = meta?.subject || ''
-
-for (const p of participants) {
-try {
-let userName = 'Miembro'
-try { userName = await Promise.resolve(sock.getName?.(p) ?? 'Miembro') } catch { userName = 'Miembro' }
-const botIdRaw = sock?.user?.id || ''
-const botIdJoin = botIdRaw ? jidNormalizedUser(botIdRaw) : ''
-
-// Configuración por defecto cuando el bot se une
-if (type === 'welcome' && botIdJoin && jidNormalizedUser(p) === botIdJoin) {
-try {
-const cfgDefaults = (global.chatDefaults && typeof global.chatDefaults === 'object') ? global.chatDefaults : {}
-global.db = global.db || { data: { users: {}, chats: {}, settings: {}, stats: {} } }
-global.db.data = global.db.data || { users: {}, chats: {}, settings: {}, stats: {} }
-global.db.data.chats = global.db.data.chats || {}
-global.db.data.chats[id] = global.db.data.chats[id] || {}
-for (const [k,v] of Object.entries(cfgDefaults)) {
-if (!(k in global.db.data.chats[id])) global.db.data.chats[id][k] = v
-}
-if (!('bienvenida' in global.db.data.chats[id]) && ('welcome' in cfgDefaults)) {
-  global.db.data.chats[id].bienvenida = !!cfgDefaults.welcome
-}
-} catch {}
-}
-
-// ENVIAR BIENVENIDA/DESPEDIDA
-if (sendWelcomeOrBye) {
-  await sendWelcomeOrBye(sock, { 
-    jid: id, 
-    userName, 
-    groupName, 
-    type: type === 'bye' ? 'bye' : 'welcome', 
-    participant: p 
-  })
-}
-} catch (e) {
-const code = e?.data || e?.output?.statusCode || e?.output?.payload?.statusCode
-if (code === 403) {
-continue
-}
-console.error('[WelcomeEvent]', e)
-}
-}
-} catch (e) { 
-  console.error('[WelcomeEvent] Error general:', e) 
-}
-})
-
-// =============================================
-// FUNCIONES DE BIENVENIDA GLOBALES
-// =============================================
-
-// Hacer funciones de bienvenida disponibles globalmente
-global.sendWelcomeOrBye = sendWelcomeOrBye
-global.isWelcomeEnabled = isWelcomeEnabled
-global.setWelcomeState = setWelcomeState
-
-}
+// El listener de 'group-participants.update' ha sido removido completamente
+// No hay sistema de bienvenidas activo
 
 startBot()
 
@@ -604,10 +502,4 @@ return phoneUtil.isValidNumber(parsed)
 } catch (error) {
 return false
 }
-}
-
-export { 
-  sendWelcomeOrBye, 
-  isWelcomeEnabled, 
-  setWelcomeState 
 }
