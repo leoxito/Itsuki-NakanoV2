@@ -23,7 +23,7 @@
 </div>
 
 <details>
-<summary><b>➮☃️ 𝗡𝗨𝗘𝗩𝗔 𝗔𝗖𝗧𝗨𝗔𝗟𝗜𝗭𝗔𝗖𝗜𝗢𝗡 𝗗𝗘 𝗜𝗧𝗦𝗨𝗞𝗜 🗞️</b></summary>
+<summary><b>✐ ᑎOᐯᗴᗪᗩᗪᗴՏ ᗪᗴᒪ ᗷOT 🗞️</b></summary>
 
 # 🍒 **ItsukiBot - Versión V3**  
 ## *¡Asombroso con nuevas opciones!*  
@@ -95,8 +95,13 @@ npm start
 ```
 </details>
 
+<details>
+<summary><b>✐ ᗴᑎᒪᗩᗰᑕᗴՏ OᖴIᑕIᗩᒪᗴՏ ᗪᗴᒪ ᗷOT 🖇️</b></summary>
 
-
+ * 𝐂𝐚𝐧𝐚𝐥 𝐎𝐟𝐢𝐜𝐢𝐚𝐥  [`¡Click aquí!`](https://whatsapp.com/channel/0029VbBBXTr5fM5flFaxsO06)
+* 𝐆𝐫𝐮𝐩𝐨 𝐎𝐟𝐢𝐜𝐢𝐚𝐥 [`¡Click aquí!`](https://chat.whatsapp.com/Dr1grCIHKb2HFvoLdl3q1i)
+* 𝐂𝐨𝐦𝐮𝐧𝐢𝐝𝐚𝐝 𝐎𝐟𝐢𝐜𝐢𝐚𝐥 [`¡Click aquí!`](https://chat.whatsapp.com/DWnpVoJgxe25H9nXNCcfCn)
+</details>
 
 
 
