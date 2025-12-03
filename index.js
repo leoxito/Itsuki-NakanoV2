@@ -11,7 +11,6 @@ import pino from 'pino'
 import { useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion, Browsers, jidNormalizedUser } from '@whiskeysockets/baileys'
 import { makeWASocket, protoType, serialize } from './lib/simple.js'
 import config from './config.js'
-// import { sendWelcomeOrBye } from './lib/welcome.js'
 import { loadDatabase, saveDatabase, DB_PATH } from './lib/db.js'
 import { watchFile } from 'fs'
 
@@ -20,13 +19,16 @@ const phoneUtil = (libPhoneNumber.PhoneNumberUtil || libPhoneNumber.default?.Pho
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
+// DEFINIR _filename aquí para evitar el error
+global._filename = __filename
+
 global.prefixes = Array.isArray(config.prefix) ? [...config.prefix] : []
 global.owner = Array.isArray(config.owner) ? config.owner : []
 global.opts = global.opts && typeof global.opts === 'object' ? global.opts : {}
 
 if (!fs.existsSync("./tmp")) {
   fs.mkdirSync("./tmp");
-  }
+}
 
 const CONFIG_PATH = path.join(__dirname, 'config.js')
 watchFile(CONFIG_PATH, async () => {
@@ -178,6 +180,8 @@ async function startBot() {
   })
 
   sock.__sessionOpenAt = sock.__sessionOpenAt || 0
+  
+  // LISTENER DE MENSAJES PRINCIPAL
   sock.ev.on('messages.upsert', async (chatUpdate) => {
     try {
       const since = sock.__sessionOpenAt || PROCESS_START_AT
@@ -209,6 +213,7 @@ async function startBot() {
   async function ensureAuthDir() {
     try { if (!fs.existsSync(authDir)) fs.mkdirSync(authDir, { recursive: true }) } catch (e) { console.error('[AuthDir]', e.message) }
   }
+  
   async function generatePairingCodeWithRetry(number, maxAttempts = 5) {
     let attempt = 0
     while (attempt < maxAttempts) {
@@ -231,6 +236,7 @@ async function startBot() {
   let pairingRequested = false
   let pairingCodeGenerated = false
   let codeRegenInterface = null
+  
   async function maybeStartPairingFlow() {
     if (method !== 'code') return
     if (sock.authState.creds.registered) return
@@ -351,8 +357,9 @@ async function startBot() {
     else {
       const total = Object.keys(global.plugins).length
       const plugInfo = `\n╭─────────────────────────────◉\n│ ${chalk.black.bgGreenBright.bold('        🧩 PLUGINS CARGADOS        ')}\n│ 「 📦 」${chalk.yellow('Total: ')}${chalk.white(total)}\n╰─────────────────────────────◉\n`
-      }
+      console.log(plugInfo)
       setTimeout(() => { if (!pairingCodeGenerated) launchCodeGeneration() }, 6000)
+    }
   }
 
   setTimeout(maybeStartPairingFlow, 2500)
@@ -390,10 +397,10 @@ async function startBot() {
             const cfgPath = path.join(__dirname, 'config.js')
             const file = await fs.promises.readFile(cfgPath, 'utf8')
             let updated = file
-              const emptyAssign = /global\.botNumber\s*=\s*(?:global\.botNumber\s*\|\|\s*)?['"]\s*['"]\s*;?/m
-              if (emptyAssign.test(updated)) {
-                updated = updated.replace(emptyAssign, `global.botNumber = '${num}'`)
-              } else if (/botNumber\s*:\s*''/m.test(updated)) {
+            const emptyAssign = /global\.botNumber\s*=\s*(?:global\.botNumber\s*\|\|\s*)?['"]\s*['"]\s*;?/m
+            if (emptyAssign.test(updated)) {
+              updated = updated.replace(emptyAssign, `global.botNumber = '${num}'`)
+            } else if (/botNumber\s*:\s*''/m.test(updated)) {
               updated = updated.replace(/botNumber\s*:\s*''/m, `botNumber: '${num}'`)
             }
             if (updated !== file) {
@@ -412,61 +419,18 @@ async function startBot() {
     }
   })
 
+  // LISTENER DE ACTUALIZACIONES DE GRUPO (SIN BIENVENIDAS)
   sock.ev.on('group-participants.update', async (ev) => {
     try {
       const { id, participants, action } = ev || {}
       if (!id || !participants || !participants.length) return
-      const db = global.db?.data
-      const chatCfg = db?.chats?.[id] || { welcome: true }
-      if (!chatCfg.welcome) return
-
-      const type = action === 'add' ? 'welcome' : (action === 'remove' ? 'bye' : null)
-      if (!type) return
-
-      const botIdRaw = sock?.user?.id || ''
-      const botId = botIdRaw ? jidNormalizedUser(botIdRaw) : ''
-      const normalizedParts = participants.map(p => {
-        try { return jidNormalizedUser(p) } catch { return p }
-      })
-      if (type === 'bye' && botId && normalizedParts.includes(botId)) {
-        return 
-      }
-
-      let meta = null
-      if (typeof sock.groupMetadata === 'function') {
-        try { meta = await sock.groupMetadata(id) } catch { meta = null }
-      }
-      const groupName = meta?.subject || ''
-
-      for (const p of participants) {
-        try {
-          let userName = 'Miembro'
-          try { userName = await Promise.resolve(sock.getName?.(p) ?? 'Miembro') } catch { userName = 'Miembro' }
-          const botIdRaw = sock?.user?.id || ''
-          const botIdJoin = botIdRaw ? jidNormalizedUser(botIdRaw) : ''
-          if (type === 'welcome' && botIdJoin && jidNormalizedUser(p) === botIdJoin) {
-            try {
-              const cfgDefaults = (global.chatDefaults && typeof global.chatDefaults === 'object') ? global.chatDefaults : {}
-              global.db = global.db || { data: { users: {}, chats: {}, settings: {}, stats: {} } }
-              global.db.data = global.db.data || { users: {}, chats: {}, settings: {}, stats: {} }
-              global.db.data.chats = global.db.data.chats || {}
-              global.db.data.chats[id] = global.db.data.chats[id] || {}
-              for (const [k,v] of Object.entries(cfgDefaults)) {
-                if (!(k in global.db.data.chats[id])) global.db.data.chats[id][k] = v
-              }
-              if (!('bienvenida' in global.db.data.chats[id]) && ('welcome' in cfgDefaults)) global.db.data.chats[id].bienvenida = !!cfgDefaults.welcome
-            } catch {}
-          }
-          await sendWelcomeOrBye(sock, { jid: id, userName, groupName, type: type === 'bye' ? 'bye' : 'welcome', participant: p })
-        } catch (e) {
-          const code = e?.data || e?.output?.statusCode || e?.output?.payload?.statusCode
-          if (code === 403) {
-            continue
-          }
-          console.error('[WelcomeEvent]', e)
-        }
-      }
-    } catch (e) { console.error('[WelcomeEvent]', e) }
+      
+      // Aquí podrías agregar otras funcionalidades de grupo si lo deseas
+      // Pero se ha eliminado el sistema de bienvenida como solicitaste
+      
+    } catch (e) { 
+      console.error('[GroupParticipantsUpdate]', e) 
+    }
   })
 }
 
