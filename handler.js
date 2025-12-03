@@ -453,10 +453,10 @@ export async function handler(chatUpdate) {
                             await this.sendMessage(m.chat, { 
                                 text: `╭─「 🚫 *ANTI-ARABE ACTIVADO* 🚫 」
 │ 
-│ > ⓘ Usuario árabe detectado y expulsado
+│ *ⓘ Usuario árabe detectado y expulsado*
 │ 
 │ 📋 *Información:*
-│ ├ Usuario: @${sender.split('@')[0]}
+│ ├ Usuario: *Arabe*
 │ ├ País: Número árabe detectado
 │ ├ Razón: Anti-Arabe activado
 │ ├ Acción: Expulsado del grupo
