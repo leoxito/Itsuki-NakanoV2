@@ -20,7 +20,6 @@
 </div>
 
 <summary><b> ➮ 𝗡𝗲𝘄 𝗨𝗽𝗱𝗮𝘁𝗲 🗞️</b></summary>
-
 # 🍒 **ItsukiBot - Versión V3**  
 ## *¡Asombroso con nuevas opciones!*  
 
