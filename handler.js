@@ -709,7 +709,7 @@ console.log(m.message)
 
 global.dfail = (type, m, conn) => {
 
-let edadaleatoria = ['666', '10', '28', '20', '40', '18', '21', '15', '11', '9', '17', '25'].getRandom()
+let edadaleatoria = ['10', '28', '20', '40', '18', '21', '15', '11', '9', '17', '25'].getRandom()
 let user2 = m.pushName || 'Anónimo'
 let verifyaleatorio = ['registrar', 'reg', 'verificar', 'verify', 'register'].getRandom()
 
