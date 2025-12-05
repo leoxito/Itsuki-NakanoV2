@@ -46,7 +46,7 @@ let handler = async (m, { conn }) => {
 > \`*Ping :\*` ${ping} ms
 > \`*Velocidad :\*` ${speed}
 > \`*Estado :\*` ${status}
-* \`*Uptime :\*` ${uptimeString}`
+> \`*Uptime :\*` ${uptimeString}`
 
     // Enviar resultado
     await conn.reply(m.chat, pingMessage, m)
