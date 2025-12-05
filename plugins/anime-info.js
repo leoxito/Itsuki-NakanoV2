@@ -117,7 +117,6 @@ ${synopsis ? synopsis.substring(0, 400) + (synopsis.length > 400 ? '...' : '') :
 handler.help = ['infomanga'] 
 handler.tags = ['anime'] 
 handler.group = true;
-handler.register = true
-handler.command = ['infomanga','mangainfo', 'buscarManga'] 
+handler.command = ['infoanime'] 
 
 export default handler
