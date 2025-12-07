@@ -1,7 +1,9 @@
 import ws from 'ws';
 let handler = async(m, { usedPrefix, conn, text }) => {
 const limit = 20
-const users = [...new Set([...global.subbots.filter((conn) => conn.user && conn.ws.socket && conn.ws.socket.readyState !== ws.CLOSED).map((conn) => conn)])];
+// --- CAMBIO CLAVE ---
+// Leemos desde global.conns
+const users = [...new Set([...global.conns.filter((conn) => conn.user && conn.ws.socket && conn.ws.socket.readyState !== ws.CLOSED).map((conn) => conn)])];
 
 function dhms(ms) {
   var segundos = Math.floor(ms / 1000);
@@ -50,7 +52,7 @@ const cap = `
 > 💾 Sesiones guardadas : ${await info(jadi)}
 > 🤖 Sesiones Activas : ${totalUsers || '0'}
 
-${replyMessage.trim()}
+ ${replyMessage.trim()}
  `.trim();
 
 conn.sendMessage(m.chat, {
