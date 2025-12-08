@@ -1,260 +1,338 @@
 import fetch from 'node-fetch'
 import yts from 'yt-search'
-const { generateWAMessageContent, generateWAMessageFromContent, proto } = (await import('@whiskeysockets/baileys')).default
 
 const API_BASE = 'http://64.20.54.50:30104/api/download/youtube'
 
-async function makeFkontak() {
-  try {
-    const res = await fetch('https://i.postimg.cc/x8dk1hcW/1000-F-575425197-qu-Jgp-NKn-FYHI8IVt8Hy-GTGb-J8lj-Owvp-H-(1).png')
-    const thumb2 = Buffer.from(await res.arrayBuffer())
-    return {
-      key: { participants: '0@s.whatsapp.net', remoteJid: 'status@broadcast', fromMe: false, id: 'Halo' },
-      message: { locationMessage: { name: 'Melody Music', jpegThumbnail: thumb2 } },
-      participant: '0@s.whatsapp.net'
-    }
-  } catch {
-    return undefined
-  }
-}
+// Cache para búsquedas recientes
+const userSessions = new Map()
 
 let handler = async (m, { conn, text, usedPrefix, command }) => {
-  const quotedContact = await makeFkontak()
-  if (!text) return conn.reply(m.chat, '🌸 *ᴘᴏʀ ғᴀᴠᴏʀ, ɪɴɢʀᴇsᴀ ᴇʟ ɴᴏᴍʙʀᴇ ᴏ ᴇɴʟᴀᴄᴇ ᴅᴇ ʏᴏᴜᴛᴜʙᴇ*\n\n✧ ⁺ ･˚ ˖° ˖⁺ ‧₊˚ ☁️⋅♡𓂃 ࣪ ִֶָ', quotedContact || m)
-  
-  await m.react('🌸')
+  const sender = m.sender
   
   try {
-    async function createImage(url) {
-      const { imageMessage } = await generateWAMessageContent({ image: { url } }, { upload: conn.waUploadToServer })
-      return imageMessage
+    if (!text) {
+      return conn.reply(m.chat, 
+        `🌸 *ᴍᴇʟᴏᴅʏ ᴍᴜsɪᴄ*\n\n` +
+        `✨ ᴘᴏʀ ғᴀᴠᴏʀ, ɪɴɢʀᴇsᴀ:\n` +
+        `• ᴇʟ ɴᴏᴍʙʀᴇ ᴅᴇ ᴜɴᴀ ᴄᴀɴᴄɪóɴ\n` +
+        `• ᴏ ᴜɴ ᴇɴʟᴀᴄᴇ ᴅᴇ ʏᴏᴜᴛᴜʙᴇ\n\n` +
+        `ᴇᴊᴇᴍᴘʟᴏ: ${usedPrefix + command} bad bunny`, 
+        m
+      )
     }
-
-    let firstYoutube = null
-    let headImage = null
-
-    // Buscar en YouTube
-    const y = await yts(text)
-    if (!y?.videos?.length) {
-      return conn.reply(m.chat, '🍓 *ɴᴏ sᴇ ᴇɴᴄᴏɴᴛʀᴀʀᴏɴ ʀᴇsᴜʟᴛᴀᴅᴏs*\n\n✧ ⁺ ･˚ ˖° ˖⁺ ‧₊˚ ☁️⋅♡𓂃 ࣪ ִֶָ', quotedContact || m)
-    }
-
-    const vids = y.videos.slice(0, 1)
-    firstYoutube = vids[0]
     
-    if (firstYoutube?.thumbnail) {
-      headImage = await createImage(firstYoutube.thumbnail)
-    }
-
-    const { title, thumbnail, timestamp, views, ago, url, author, seconds } = firstYoutube
+    await m.react('🔍')
     
-    if (seconds > 1800) {
-      return conn.reply(m.chat, '⚠️ *ᴇʟ ᴄᴏɴᴛᴇɴɪᴅᴏ sᴜᴘᴇʀᴀ ʟᴏs 30 ᴍɪɴᴜᴛᴏs*\n\n✧ ⁺ ･˚ ˖° ˖⁺ ‧₊˚ ☁️⋅♡𓂃 ࣪ ִֶָ', quotedContact || m)
-    }
-
-    // Texto con diseño cute minimalista
-    let bodyText = `✨ *ᴅᴇᴛᴀʟʟᴇs ᴅᴇʟ ᴄᴏɴᴛᴇɴɪᴅᴏ* ✨
-
-🌸 *ᴛíᴛᴜʟᴏ:* ${title}
-🎀 *ᴄᴀɴᴀʟ:* ${author.name}
-⏳ *ᴅᴜʀᴀᴄɪóɴ:* ${timestamp}
-📅 *ᴘᴜʙʟɪᴄᴀᴅᴏ:* ${ago}
-👁️ *ᴠɪsᴛᴀs:* ${formatViews(views)}
-
-☁️ *sᴇʟᴇᴄᴄɪᴏɴᴀ ᴇʟ ғᴏʀᴍᴀᴛᴏ:*`
-
-    // Crear botones de respuesta rápida cute
-    let quickButtons = [
-      { 
-        name: 'quick_reply', 
-        buttonParamsJson: JSON.stringify({ 
-          display_text: '🎧  ᴀᴜᴅɪᴏ ᴍᴘ₃', 
-          id: `${usedPrefix}maudio ${url}`
-        }) 
-      },
-      { 
-        name: 'quick_reply', 
-        buttonParamsJson: JSON.stringify({ 
-          display_text: '🎬  ᴠɪᴅᴇᴏ ᴍᴘ₄', 
-          id: `${usedPrefix}mvideo ${url}`
-        }) 
-      }
-    ]
-
-    // Crear mensaje interactivo con diseño cute
-    const combinedMessage = {
-      viewOnceMessage: {
-        message: {
-          messageContextInfo: { deviceListMetadata: {}, deviceListMetadataVersion: 2 },
-          interactiveMessage: proto.Message.InteractiveMessage.fromObject({
-            ...(headImage
-              ? {
-                  header: proto.Message.InteractiveMessage.Header.fromObject({
-                    title: '🌸  ᴍᴇʟᴏᴅʏ ᴍᴜsɪᴄ  🌸',
-                    subtitle: '✧ ⁺ ･˚ ˖° ˖⁺ ‧₊˚ ☁️⋅',
-                    hasMediaAttachment: true,
-                    imageMessage: headImage
-                  })
-                }
-              : {
-                  header: proto.Message.InteractiveMessage.Header.fromObject({
-                    title: '🌸  ᴍᴇʟᴏᴅʏ ᴍᴜsɪᴄ  🌸',
-                    subtitle: '✧ ⁺ ･˚ ˖° ˖⁺ ‧₊˚ ☁️⋅',
-                    hasMediaAttachment: false
-                  })
-                }),
-            body: proto.Message.InteractiveMessage.Body.fromObject({ 
-              text: bodyText 
-            }),
-            footer: proto.Message.InteractiveMessage.Footer.fromObject({
-              text: '🍓  ᴄᴏɴ  ᴀᴍᴏʀ  ᴅᴇ  ᴍᴇʟᴏᴅʏ  🍓'
-            }),
-            nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.fromObject({ 
-              buttons: quickButtons
-            })
-          })
+    // Verificar si es URL directa de YouTube
+    const urlMatch = text.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/|live\/|v\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/)
+    
+    let videoInfo
+    
+    if (urlMatch) {
+      // Es URL directa
+      const videoId = urlMatch[1]
+      const url = `https://youtu.be/${videoId}`
+      
+      try {
+        const search = await yts({ videoId })
+        videoInfo = search.videos[0] || null
+        
+        if (!videoInfo) {
+          // Si no encuentra por videoId, intentar búsqueda general
+          const searchAlt = await yts(url)
+          videoInfo = searchAlt.videos.find(v => v.videoId === videoId) || searchAlt.all[0]
         }
+      } catch (error) {
+        console.log('Error en búsqueda directa:', error.message)
+        // Intentar con búsqueda del texto completo
+        const search = await yts(text)
+        videoInfo = search.videos[0]
       }
+    } else {
+      // Es búsqueda por texto
+      const search = await yts(text)
+      if (!search?.videos?.length) {
+        await m.react('❌')
+        return conn.reply(m.chat, 
+          '🍓 *ɴᴏ sᴇ ᴇɴᴄᴏɴᴛʀᴀʀᴏɴ ʀᴇsᴜʟᴛᴀᴅᴏs*\n\n' +
+          '✨ ɪɴᴛᴇɴᴛᴀ ᴄᴏɴ:\n' +
+          '• ᴏᴛʀᴏ ɴᴏᴍʙʀᴇ\n' +
+          '• ᴏ ᴜɴ ᴇɴʟᴀᴄᴇ ᴅɪʀᴇᴄᴛᴏ ᴅᴇ ʏᴏᴜᴛᴜʙᴇ', 
+          m
+        )
+      }
+      videoInfo = search.videos[0]
     }
-
-    await conn.relayMessage(m.chat, combinedMessage, { messageId: m.id?.id || m.key.id })
-    await m.react('💖')
+    
+    if (!videoInfo || !videoInfo.url) {
+      await m.react('❌')
+      return conn.reply(m.chat, '🍓 *ɴᴏ sᴇ ᴘᴜᴅᴏ ᴏʙᴛᴇɴᴇʀ ɪɴғᴏʀᴍᴀᴄɪóɴ ᴅᴇʟ ᴠɪᴅᴇᴏ*', m)
+    }
+    
+    // Verificar duración (máximo 30 minutos)
+    if (videoInfo.seconds > 1800) {
+      await m.react('⏰')
+      return conn.reply(m.chat, 
+        '⚠️ *ᴇʟ ᴠɪᴅᴇᴏ ᴇs ᴍᴜʏ ʟᴀʀɢᴏ*\n\n' +
+        `ᴅᴜʀᴀᴄɪóɴ: ${videoInfo.timestamp}\n` +
+        'ʟíᴍɪᴛᴇ: 30 ᴍɪɴᴜᴛᴏs\n\n' +
+        '✨ ɪɴᴛᴇɴᴛᴀ ᴄᴏɴ ᴜɴ ᴠɪᴅᴇᴏ ᴍás ᴄᴏʀᴛᴏ', 
+        m
+      )
+    }
+    
+    // Guardar sesión del usuario
+    userSessions.set(sender, {
+      videoInfo,
+      timestamp: Date.now()
+    })
+    
+    // Limpiar sesiones antiguas (más de 5 minutos)
+    cleanupOldSessions()
+    
+    // Mostrar información y preguntar formato
+    const message = `🌸 *ᴍᴇʟᴏᴅʏ ᴍᴜsɪᴄ* 🌸\n\n` +
+      `🎵 *ᴛíᴛᴜʟᴏ:* ${videoInfo.title}\n` +
+      `👨‍🎤 *ᴀʀᴛɪsᴛᴀ:* ${videoInfo.author?.name || videoInfo.author}\n` +
+      `⏳ *ᴅᴜʀᴀᴄɪóɴ:* ${videoInfo.timestamp}\n` +
+      `👀 *ᴠɪsᴛᴀs:* ${formatViews(videoInfo.views)}\n` +
+      `📅 *ᴘᴜʙʟɪᴄᴀᴅᴏ:* ${videoInfo.ago || 'N/A'}\n\n` +
+      `✨ *¿ǫᴜé ᴅᴇsᴇᴀs ᴅᴇsᴄᴀʀɢᴀʀ?*\n\n` +
+      `𝟭  »  ᴀᴜᴅɪᴏ ᴍᴘ₃\n` +
+      `𝟮  »  ᴠɪᴅᴇᴏ ᴍᴘ₄\n\n` +
+      `ʀᴇsᴘᴏɴᴅᴇ ᴀ ᴇsᴛᴇ ᴍᴇɴsᴀᴊᴇ ᴄᴏɴ:\n` +
+      `• "1" ᴏ "audio" - ᴘᴀʀᴀ ᴀᴜᴅɪᴏ\n` +
+      `• "2" ᴏ "video" - ᴘᴀʀᴀ ᴠɪᴅᴇᴏ`
+    
+    // Enviar mensaje con miniatura si está disponible
+    if (videoInfo.thumbnail) {
+      await conn.sendMessage(m.chat, {
+        image: { url: videoInfo.thumbnail },
+        caption: message
+      }, { quoted: m })
+    } else {
+      await conn.reply(m.chat, message, m)
+    }
+    
+    await m.react('✅')
     
   } catch (error) {
     console.error('Error en Melody:', error)
-    conn.reply(m.chat, `🍓 *ᴏʜ ɴᴏ! ʜᴜʙᴏ ᴜɴ ᴇʀʀᴏʀ*\n\n${error?.message || 'ɪɴᴛᴇɴᴛᴀ ɴᴜᴇᴠᴀᴍᴇɴᴛᴇ'}\n\n✧ ⁺ ･˚ ˖° ˖⁺ ‧₊˚ ☁️⋅♡𓂃 ࣪ ִֶָ`, quotedContact || m)
-    await m.react('💔')
+    await m.react('❌')
+    return conn.reply(m.chat, 
+      '🍓 *ᴏʜ ɴᴏ! ʜᴜʙᴏ ᴜɴ ᴇʀʀᴏʀ*\n\n' +
+      '✨ ᴘᴏsɪʙʟᴇs ᴄᴀᴜsᴀs:\n' +
+      '• ᴇʟ ᴠɪᴅᴇᴏ ɴᴏ ᴇsᴛá ᴅɪsᴘᴏɴɪʙʟᴇ\n' +
+      '• ᴘʀᴏʙʟᴇᴍᴀ ᴅᴇ ᴄᴏɴᴇxɪóɴ\n' +
+      '• ʟᴀ ʙúsǫᴜᴇᴅᴀ ᴇs ᴍᴜʏ ᴀᴍᴘʟɪᴀ\n\n' +
+      '✨ ɪɴᴛᴇɴᴛᴀ:\n' +
+      '• ᴄᴏɴ ᴜɴ ᴇɴʟᴀᴄᴇ ᴅɪʀᴇᴄᴛᴏ\n' +
+      '• ᴏ ᴄᴏɴ ᴏᴛʀᴏ ᴛéʀᴍɪɴᴏ ᴅᴇ ʙúsǫᴜᴇᴅᴀ', 
+      m
+    )
   }
 }
 
-// Handler para descargar audio
-const audioHandler = async (m, { conn, text, usedPrefix }) => {
-  const quotedContact = await makeFkontak()
-  if (!text) return conn.reply(m.chat, '🌸 *ᴘᴏʀ ғᴀᴠᴏʀ, ɪɴɢʀᴇsᴀ ᴇʟ ᴇɴʟᴀᴄᴇ*\n\n✧ ⁺ ･˚ ˖° ˖⁺ ‧₊˚ ☁️⋅♡𓂃 ࣪ ִֶָ', quotedContact || m)
+// Manejador para respuestas de usuario
+const responseHandler = async (m, { conn }) => {
+  const sender = m.sender
+  let text = m.text?.trim()?.toLowerCase()
   
-  await m.react('🌸')
+  // Si es un comando, no procesar
+  if (text.startsWith('!') || text.startsWith('.') || text.startsWith('/')) {
+    return
+  }
+  
+  // Verificar si el usuario tiene una sesión activa
+  if (!userSessions.has(sender)) return
+  
+  const session = userSessions.get(sender)
+  
+  // Verificar si la sesión ha expirado (5 minutos)
+  if (Date.now() - session.timestamp > 300000) {
+    userSessions.delete(sender)
+    return conn.reply(m.chat, '⏰ *ʟᴀ sᴇsɪóɴ ʜᴀ ᴇxᴘɪʀᴀᴅᴏ*\n\n✨ ᴘᴏʀ ғᴀᴠᴏʀ, ᴜsᴀ ᴇʟ ᴄᴏᴍᴀɴᴅᴏ !melody ᴅᴇ ɴᴜᴇᴠᴏ', m)
+  }
+  
+  // Limpiar el texto (quitar espacios y convertir a minúsculas)
+  text = text.replace(/[^a-zA-Z0-9]/g, '').toLowerCase()
+  
+  // Verificar si la respuesta es válida
+  const isAudio = text === '1' || text === 'audio' || text === 'mp3' || text === 'musica' || text === 'song'
+  const isVideo = text === '2' || text === 'video' || text === 'mp4' || text === 'vid' || text === 'pelicula'
+  
+  if (!isAudio && !isVideo) {
+    return conn.reply(m.chat, 
+      '🍓 *ᴏᴘᴄɪóɴ ɴᴏ ᴠáʟɪᴅᴀ*\n\n' +
+      '✨ ᴘᴏʀ ғᴀᴠᴏʀ, ʀᴇsᴘᴏɴᴅᴇ ᴄᴏɴ:\n' +
+      '• "1" ᴏ "audio" - ᴘᴀʀᴀ ᴀᴜᴅɪᴏ ᴍᴘ₃\n' +
+      '• "2" ᴏ "video" - ᴘᴀʀᴀ ᴠɪᴅᴇᴏ ᴍᴘ₄\n\n' +
+      'ᴏ ᴠᴜᴇʟᴠᴇ ᴀ ᴜsᴀʀ: !melody [ʙúsǫᴜᴇᴅᴀ]', 
+      m
+    )
+  }
+  
+  const videoInfo = session.videoInfo
   
   try {
-    const urlMatch = text.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/|live\/|v\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/)
-    if (!urlMatch) {
-      return conn.reply(m.chat, '🍓 *ᴇɴʟᴀᴄᴇ ɴᴏ ᴠáʟɪᴅᴏ*\n\n✧ ⁺ ･˚ ˖° ˖⁺ ‧₊˚ ☁️⋅♡𓂃 ࣪ ִֶָ', quotedContact || m)
+    await m.react('⏳')
+    
+    // Mostrar mensaje de procesamiento
+    const processingMsg = await conn.reply(m.chat, 
+      `🌸 *ᴘʀᴏᴄᴇsᴀɴᴅᴏ ${isAudio ? 'ᴀᴜᴅɪᴏ' : 'ᴠɪᴅᴇᴏ'}...*\n\n` +
+      `✨ ${videoInfo.title.substring(0, 70)}${videoInfo.title.length > 70 ? '...' : ''}\n` +
+      `👨‍🎤 ${videoInfo.author?.name || videoInfo.author}\n` +
+      `⏳ ${videoInfo.timestamp}\n\n` +
+      `🍓 ᴇsᴛᴏ ᴘᴜᴇᴅᴇ ᴛᴏᴍᴀʀ ᴜɴᴏs sᴇɢᴜɴᴅᴏs...`, 
+      m
+    )
+    
+    // Crear URL de descarga según la API
+    const downloadUrl = isAudio 
+      ? `${API_BASE}/mp3?url=${encodeURIComponent(videoInfo.url)}`
+      : `${API_BASE}/mp4?url=${encodeURIComponent(videoInfo.url)}`
+    
+    console.log('URL de descarga:', downloadUrl)
+    
+    // Configurar timeout (20 segundos máximo)
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 20000)
+    
+    // Intentar descargar el archivo
+    try {
+      if (isAudio) {
+        // Para audio
+        await conn.sendMessage(m.chat, {
+          audio: { url: downloadUrl },
+          fileName: `${cleanFileName(videoInfo.title)}.mp3`,
+          mimetype: 'audio/mpeg',
+          ptt: false
+        }, { quoted: m })
+      } else {
+        // Para video
+        await conn.sendMessage(m.chat, {
+          video: { url: downloadUrl },
+          caption: `🌸 *ᴠɪᴅᴇᴏ ᴅᴇsᴄᴀʀɢᴀᴅᴏ* 🌸\n\n` +
+                   `🎬 ${videoInfo.title}\n` +
+                   `✨ ${videoInfo.author?.name || videoInfo.author}\n` +
+                   `⏳ ${videoInfo.timestamp}\n` +
+                   `👀 ${formatViews(videoInfo.views)}\n\n` +
+                   `🍓 ǫᴜᴇ ʟᴏ ᴅɪsғʀᴜᴛᴇs!`,
+          fileName: `${cleanFileName(videoInfo.title)}.mp4`,
+          mimetype: 'video/mp4'
+        }, { quoted: m })
+      }
+      
+      clearTimeout(timeoutId)
+      
+      // Eliminar mensaje de procesamiento si es posible
+      try {
+        await conn.sendMessage(m.chat, { 
+          delete: processingMsg.key 
+        })
+      } catch (e) {
+        console.log('No se pudo eliminar mensaje de procesamiento:', e.message)
+      }
+      
+      // Limpiar sesión
+      userSessions.delete(sender)
+      
+      await m.react('✅')
+      
+    } catch (downloadError) {
+      clearTimeout(timeoutId)
+      console.error('Error en descarga directa:', downloadError.message)
+      
+      // Si falla, intentar método alternativo - descarga directa desde la API
+      try {
+        await conn.reply(m.chat, '🍓 *ɪɴᴛᴇɴᴛᴀɴᴅᴏ ᴍéᴛᴏᴅᴏ ᴀʟᴛᴇʀɴᴀᴛɪᴠᴏ...*, m)
+        
+        // Enviar directamente el archivo desde la URL
+        if (isAudio) {
+          await conn.sendMessage(m.chat, {
+            audio: { url: downloadUrl },
+            fileName: `${cleanFileName(videoInfo.title)}.mp3`,
+            mimetype: 'audio/mpeg'
+          }, { quoted: m })
+        } else {
+          await conn.sendMessage(m.chat, {
+            video: { url: downloadUrl },
+            caption: `🌸 *ᴠɪᴅᴇᴏ ᴅᴇsᴄᴀʀɢᴀᴅᴏ* 🌸\n\n🍓 ᴅɪsғʀᴜᴛᴀ ᴛᴜ ᴄᴏɴᴛᴇɴɪᴅᴏ!`,
+            fileName: `${cleanFileName(videoInfo.title)}.mp4`
+          }, { quoted: m })
+        }
+        
+        // Eliminar mensaje de procesamiento
+        try {
+          await conn.sendMessage(m.chat, { 
+            delete: processingMsg.key 
+          })
+        } catch {}
+        
+        userSessions.delete(sender)
+        await m.react('✅')
+        
+      } catch (altError) {
+        console.error('Error en método alternativo:', altError.message)
+        
+        // Limpiar sesión
+        userSessions.delete(sender)
+        
+        await m.react('❌')
+        return conn.reply(m.chat, 
+          '🍓 *ɴᴏ sᴇ ᴘᴜᴅᴏ ᴄᴏɴᴇᴄᴛᴀʀ ᴄᴏɴ ᴇʟ sᴇʀᴠɪᴅᴏʀ*\n\n' +
+          '✨ ᴘᴏsɪʙʟᴇs ᴄᴀᴜsᴀs:\n' +
+          '• ᴇʟ sᴇʀᴠɪᴅᴏʀ ᴇsᴛá ᴏғғʟɪɴᴇ\n' +
+          '• ᴇʟ ᴠɪᴅᴇᴏ ᴇsᴛá ʀᴇsᴛʀɪɴɢɪᴅᴏ\n' +
+          '• ᴘʀᴏʙʟᴇᴍᴀ ᴅᴇ ᴄᴏɴᴇxɪóɴ\n\n' +
+          '✨ ɪɴᴛᴇɴᴛᴀ:\n' +
+          '• ᴇsᴘᴇʀᴀ ᴜɴᴏs ᴍɪɴᴜᴛᴏs\n' +
+          '• ᴏ ᴜsᴀ ᴏᴛʀᴏ ᴇɴʟᴀᴄᴇ', 
+          m
+        )
+      }
     }
-    
-    const url = `https://youtu.be/${urlMatch[1]}`
-    
-    const search = await yts(url)
-    const video = search.videos.find(v => v.videoId === urlMatch[1]) || search.all[0]
-    
-    if (!video) {
-      return conn.reply(m.chat, '🍓 *ᴠɪᴅᴇᴏ ɴᴏ ᴇɴᴄᴏɴᴛʀᴀᴅᴏ*\n\n✧ ⁺ ･˚ ˖° ˖⁺ ‧₊˚ ☁️⋅♡𓂃 ࣪ ִֶָ', quotedContact || m)
-    }
-    
-    if (video.seconds > 1800) {
-      return conn.reply(m.chat, '⚠️ *ᴇʟ ᴀᴜᴅɪᴏ sᴜᴘᴇʀᴀ ʟᴏs 30 ᴍɪɴᴜᴛᴏs*\n\n✧ ⁺ ･˚ ˖° ˖⁺ ‧₊˚ ☁️⋅♡𓂃 ࣪ ִֶָ', quotedContact || m)
-    }
-    
-    const downloadUrl = `${API_BASE}/mp3?url=${encodeURIComponent(url)}`
-    
-    // Mensaje cute de procesamiento
-    await conn.reply(m.chat, `🌸 *ᴘʀᴏᴄᴇsᴀɴᴅᴏ ᴀᴜᴅɪᴏ...* 🌸
-
-🎧 **${video.title.substring(0, 50)}${video.title.length > 50 ? '...' : ''}**
-✨ ${video.author.name}
-⏰ ${video.timestamp}
-
-☁️ *ᴇsᴛᴏ ᴘᴜᴇᴅᴇ ᴛᴏᴍᴀʀ ᴜɴᴏs sᴇɢᴜɴᴅᴏs...*
-✧ ⁺ ･˚ ˖° ˖⁺ ‧₊˚ ☁️⋅♡𓂃 ࣪ ִֶָ`, quotedContact || m)
-    
-    // Enviar audio con nombre cute
-    await conn.sendMessage(m.chat, {
-      audio: { url: downloadUrl },
-      fileName: `🌸 ${cleanFileName(video.title.substring(0, 30))}.mp3`,
-      mimetype: 'audio/mpeg',
-      ptt: false
-    }, { quoted: m })
-    
-    await m.react('💖')
     
   } catch (error) {
-    console.error('Error en maudio:', error)
-    conn.reply(m.chat, `🍓 *ᴏʜ ɴᴏ! ɴᴏ ᴘᴜᴅᴇ ᴅᴇsᴄᴀʀɢᴀʀᴇ ᴇʟ ᴀᴜᴅɪᴏ*\n\n${error?.message || 'ɪɴᴛᴇɴᴛᴀ ᴅᴇ ɴᴜᴇᴠᴏ'}\n\n✧ ⁺ ･˚ ˖° ˖⁺ ‧₊˚ ☁️⋅♡𓂃 ࣪ ִֶָ`, quotedContact || m)
-    await m.react('💔')
+    console.error('Error general en respuesta:', error)
+    await m.react('❌')
+    
+    // Limpiar sesión en caso de error
+    userSessions.delete(sender)
+    
+    return conn.reply(m.chat, 
+      '🍓 *ᴏᴄᴜʀʀɪó ᴜɴ ᴇʀʀᴏʀ ɪɴᴇsᴘᴇʀᴀᴅᴏ*\n\n' +
+      '✨ ᴘᴏʀ ғᴀᴠᴏʀ, ɪɴᴛᴇɴᴛᴀ:\n' +
+      '1. Usar !melody de nuevo\n' +
+      '2. Con un enlace directo de YouTube\n' +
+      '3. Esperar unos minutos', 
+      m
+    )
   }
 }
 
-// Handler para descargar video
-const videoHandler = async (m, { conn, text, usedPrefix }) => {
-  const quotedContact = await makeFkontak()
-  if (!text) return conn.reply(m.chat, '🌸 *ᴘᴏʀ ғᴀᴠᴏʀ, ɪɴɢʀᴇsᴀ ᴇʟ ᴇɴʟᴀᴄᴇ*\n\n✧ ⁺ ･˚ ˖° ˖⁺ ‧₊˚ ☁️⋅♡𓂃 ࣪ ִֶָ', quotedContact || m)
-  
-  await m.react('🌸')
-  
-  try {
-    const urlMatch = text.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/|live\/|v\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/)
-    if (!urlMatch) {
-      return conn.reply(m.chat, '🍓 *ᴇɴʟᴀᴄᴇ ɴᴏ ᴠáʟɪᴅᴏ*\n\n✧ ⁺ ･˚ ˖° ˖⁺ ‧₊˚ ☁️⋅♡𓂃 ࣪ ִֶָ', quotedContact || m)
+// Función para limpiar sesiones antiguas
+function cleanupOldSessions() {
+  const now = Date.now()
+  for (const [sender, session] of userSessions.entries()) {
+    if (now - session.timestamp > 300000) { // 5 minutos
+      userSessions.delete(sender)
     }
-    
-    const url = `https://youtu.be/${urlMatch[1]}`
-    
-    const search = await yts(url)
-    const video = search.videos.find(v => v.videoId === urlMatch[1]) || search.all[0]
-    
-    if (!video) {
-      return conn.reply(m.chat, '🍓 *ᴠɪᴅᴇᴏ ɴᴏ ᴇɴᴄᴏɴᴛʀᴀᴅᴏ*\n\n✧ ⁺ ･˚ ˖° ˖⁺ ‧₊˚ ☁️⋅♡𓂃 ࣪ ִֶָ', quotedContact || m)
-    }
-    
-    if (video.seconds > 1800) {
-      return conn.reply(m.chat, '⚠️ *ᴇʟ ᴠɪᴅᴇᴏ sᴜᴘᴇʀᴀ ʟᴏs 30 ᴍɪɴᴜᴛᴏs*\n\n✧ ⁺ ･˚ ˖° ˖⁺ ‧₊˚ ☁️⋅♡𓂃 ࣪ ִֶָ', quotedContact || m)
-    }
-    
-    const downloadUrl = `${API_BASE}/mp4?url=${encodeURIComponent(url)}`
-    
-    // Mensaje cute de procesamiento
-    await conn.reply(m.chat, `🌸 *ᴘʀᴏᴄᴇsᴀɴᴅᴏ ᴠɪᴅᴇᴏ...* 🌸
-
-🎬 **${video.title.substring(0, 50)}${video.title.length > 50 ? '...' : ''}**
-✨ ${video.author.name}
-⏰ ${video.timestamp}
-
-☁️ *ᴇsᴛᴏ ᴘᴜᴇᴅᴇ ᴛᴏᴍᴀʀ ᴜɴᴏs sᴇɢᴜɴᴅᴏs...*
-✧ ⁺ ･˚ ˖° ˖⁺ ‧₊˚ ☁️⋅♡𓂃 ࣪ ִֶָ`, quotedContact || m)
-    
-    // Enviar video con nombre cute
-    await conn.sendMessage(m.chat, {
-      video: { url: downloadUrl },
-      caption: `🌸 *ᴠɪᴅᴇᴏ ᴅᴇsᴄᴀʀɢᴀᴅᴏ* 🌸
-
-🎬 ${video.title}
-✨ ${video.author.name}
-⏰ ${video.timestamp}
-👁️ ${formatViews(video.views)}
-
-🍓 *ᴅɪsғʀᴜᴛᴀ ᴛᴜ ᴠɪᴅᴇᴏ!*
-✧ ⁺ ･˚ ˖° ˖⁺ ‧₊˚ ☁️⋅♡𓂃 ࣪ ִֶָ`,
-      fileName: `🌸 ${cleanFileName(video.title.substring(0, 30))}.mp4`,
-      mimetype: 'video/mp4'
-    }, { quoted: m })
-    
-    await m.react('💖')
-    
-  } catch (error) {
-    console.error('Error en mvideo:', error)
-    conn.reply(m.chat, `🍓 *ᴏʜ ɴᴏ! ɴᴏ ᴘᴜᴅᴇ ᴅᴇsᴄᴀʀɢᴀʀᴇ ᴇʟ ᴠɪᴅᴇᴏ*\n\n${error?.message || 'ɪɴᴛᴇɴᴛᴀ ᴅᴇ ɴᴜᴇᴠᴏ'}\n\n✧ ⁺ ･˚ ˖° ˖⁺ ‧₊˚ ☁️⋅♡𓂃 ࣪ ִֶָ`, quotedContact || m)
-    await m.react('💔')
   }
 }
 
 // Funciones auxiliares
 function formatViews(views) {
-  if (!views) return "0"
-  if (views >= 1000000000) return `${(views / 1000000000).toFixed(1)}ʙ`
-  if (views >= 1000000) return `${(views / 1000000).toFixed(1)}ᴍ`
-  if (views >= 1000) return `${(views / 1000).toFixed(1)}ᴋ`
-  return views.toString()
+  if (!views || isNaN(views)) return "0"
+  const numViews = parseInt(views)
+  if (numViews >= 1000000000) return `${(numViews / 1000000000).toFixed(1)}B`
+  if (numViews >= 1000000) return `${(numViews / 1000000).toFixed(1)}M`
+  if (numViews >= 1000) return `${(numViews / 1000).toFixed(1)}K`
+  return numViews.toString()
 }
 
 function cleanFileName(name) {
+  if (!name) return 'melody_download'
   return name
     .replace(/[<>:"/\\|?*]/g, '')
     .replace(/\s+/g, '_')
@@ -264,33 +342,30 @@ function cleanFileName(name) {
 // Configuración de comandos
 handler.help = ['melody']
 handler.tags = ['downloader', 'music']
-handler.command = ['melody', 'mel', 'melly']
+handler.command = ['melody', 'mel', 'melly', 'play10']
 
 // Exportar handlers
 export {
   handler as default,
-  audioHandler as maudioHandler,
-  videoHandler as mvideoHandler
+  responseHandler as melodyResponse
 }
 
 // Instrucciones para usar en el archivo principal:
 /*
-import melodyHandler, { maudioHandler, mvideoHandler } from './melody.js'
+import melodyHandler, { melodyResponse } from './melody.js'
 
 // Registrar comando principal
 conn.commands.set('melody', melodyHandler)
+conn.commands.set('play3', melodyHandler) // También responde a play3
 
 // En el manejador de mensajes, agregar:
 conn.on('message', async (m) => {
-  if (!m.message) return
+  if (!m.message || !m.text) return
   
+  // Solo procesar respuestas que no sean comandos
   const text = m.text.trim()
-  const usedPrefix = '!' // Tu prefijo
-  
-  if (text.startsWith(`${usedPrefix}maudio`)) {
-    await maudioHandler(m, { conn, text: text.replace(`${usedPrefix}maudio`, '').trim(), usedPrefix })
-  } else if (text.startsWith(`${usedPrefix}mvideo`)) {
-    await mvideoHandler(m, { conn, text: text.replace(`${usedPrefix}mvideo`, '').trim(), usedPrefix })
+  if (!text.startsWith('!') && !text.startsWith('.') && !text.startsWith('/')) {
+    await melodyResponse(m, { conn })
   }
 })
 */
